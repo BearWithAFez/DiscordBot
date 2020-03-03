@@ -64,6 +64,15 @@ async def _8ball(ctx, *, question):
 async def clear(ctx, amount=999):
     await ctx.channel.purge(limit=amount)
 
+# Get Json
+@client.command()
+async def dumpJson(ctx):
+    print("Fetching Json..")
+    with open(variables.SURRENDER_POSTS_FILE, 'r') as f:
+        posts = json.load(f)
+    # Get Feed
+    await client.get_channel(variables.SURRENDER_CHANNEL_ID).send(posts)
+
 # FF@20 functionality
 async def send_embeded(newPost):
     # get usefull stuff out
