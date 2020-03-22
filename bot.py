@@ -9,6 +9,7 @@ from discord.ext import commands
 import variables
 
 client = commands.Bot(command_prefix = variables.BOT_PREFIX)
+posts = {}
 
 # On boot
 @client.event
@@ -37,6 +38,7 @@ async def change_status():
 
 # refresh FF@15
 async def poll_ff15():
+    global posts
     await client.wait_until_ready()
     while True:
         print("Fetching new FF@15 news..")
@@ -48,7 +50,7 @@ async def poll_ff15():
         parsed = feedparser.parse(resp.content)
         # loop REVERSED(old first) over each entry and check if it already has been posted
         for nPost in parsed.entries[::-1]:
-            await try_post(posts, nPost)        
+            await try_post(nPost)        
         # Save new posts 
         with open(variables.SURRENDER_POSTS_FILE, 'w') as f:
             json.dump(posts, f) 
@@ -93,13 +95,13 @@ async def send_embeded(newPost):
     # send message
     await client.get_channel(variables.SURRENDER_CHANNEL_ID).send(embed=embed)
 
-async def try_post(posts, nPost):
+async def try_post(nPost):
+    global posts
     if nPost.id in posts:
         return
     else:
         # Add it to the list
-        posts[nPost.id] = {}
-        posts[nPost.id] = "Posted @ "+ datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+        posts[nPost.id] = {"title" : nPost.title, "timestamp" : datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}
         # Make an embedded msg for it
         await send_embeded(nPost)
 
