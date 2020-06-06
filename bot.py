@@ -4,12 +4,14 @@ import asyncio
 import requests
 import json
 import feedparser
+import mysql.connector
 from datetime import datetime
 from discord.ext import commands
 import variables
 
 client = commands.Bot(command_prefix = variables.BOT_PREFIX)
-posts = {}
+postsIDS = []
+posts = []
 
 # On boot
 @client.event
@@ -43,17 +45,26 @@ async def poll_ff15():
     while True:
         print("Fetching new FF@15 news..")
         # Get previous posts
-        with open(variables.SURRENDER_POSTS_FILE, 'r') as f:
-            posts = json.load(f)
+        con = mysql.connector.connect(
+            host = variables.DB_HOST,
+            user = variables.DB_USER,
+            password = variables.DB_PASSWORD,
+            port = variables.DB_PORT,
+            database = variables.DB_DATABASE
+        )
+        cur = con.cursor()
+        cur.execute("SELECT * FROM datatest")
+        posts = cur.fetchall()
+        for p in posts:
+            postsIDS.append(p[2])
         # Get Feed
         resp = requests.get(variables.SURRENDER_RSS_FEED_URL)
         parsed = feedparser.parse(resp.content)
         # loop REVERSED(old first) over each entry and check if it already has been posted
         for nPost in parsed.entries[::-1]:
-            await try_post(nPost)        
-        # Save new posts 
-        with open(variables.SURRENDER_POSTS_FILE, 'w') as f:
-            json.dump(posts, f) 
+            await try_post(nPost, cur)
+        con.commit()
+        con.close()
         await asyncio.sleep(variables.SURRENDER_POLL_INTERVAL * 60)
 
 # fun 8ball thingie
@@ -95,15 +106,21 @@ async def send_embeded(newPost):
     # send message
     await client.get_channel(variables.SURRENDER_CHANNEL_ID).send(embed=embed)
 
-async def try_post(nPost):
+async def try_post(nPost,cur):
     global posts
-    if nPost.id in posts:
+    global postsIDS
+    newest = ( nPost.title, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), nPost.id )
+    newestID =  nPost.id
+    if newestID in postsIDS:
         return
     else:
         # Add it to the list
-        posts[nPost.id] = {"title" : nPost.title, "timestamp" : datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}
+        posts.append(newest)
+        postsIDS.append(newestID)
         # Make an embedded msg for it
         await send_embeded(nPost)
+        # write it to the DB      
+        cur.execute(f"INSERT INTO `{variables.DB_DATABASE}`.`{variables.DB_REPO}` (title, date, tag) VALUES ('{newest[0]}','{newest[1]}','{newest[2]}')")
 
 # Run the bot
 client.loop.create_task(change_status())

@@ -59,3 +59,10 @@ SURRENDER_CHANNEL_ID = 535533419589926922
 SURRENDER_RSS_FEED_URL = 'https://feeds.feedburner.com/surrenderat20/CqWw'
 SURRENDER_POSTS_FILE = 'SurrenderPosts.json'
 SURRENDER_POLL_INTERVAL = 1 # in minutes
+# DB
+DB_HOST = "fojvtycq53b2f2kx.chr7pe7iynqr.eu-west-1.rds.amazonaws.com"
+DB_USER = "km0vit1vfgxcxyh9"
+DB_PASSWORD = "z7lkxvwmktlb79ia"
+DB_DATABASE = "y6vhl5qj1l0o1vww"
+DB_REPO = "datatest"
+DB_PORT = 3306
