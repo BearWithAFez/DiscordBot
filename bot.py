@@ -53,7 +53,7 @@ async def poll_ff15():
             database = variables.DB_DATABASE
         )
         cur = con.cursor()
-        cur.execute("SELECT * FROM datatest")
+        cur.execute(f"SELECT * FROM {variables.DB_REPO}")
         posts = cur.fetchall()
         for p in posts:
             postsIDS.append(p[2])
