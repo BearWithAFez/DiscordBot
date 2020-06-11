@@ -109,7 +109,7 @@ async def send_embeded(newPost):
 async def try_post(nPost,cur):
     global posts
     global postsIDS
-    newest = ( nPost.title, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), nPost.id )
+    newest = ( nPost.title.replace("'",""), datetime.now().strftime("%Y/%m/%d %H:%M:%S"), nPost.id[nPost.id.index("p"):] )
     newestID =  nPost.id
     if newestID in postsIDS:
         return
@@ -120,6 +120,7 @@ async def try_post(nPost,cur):
         # Make an embedded msg for it
         await send_embeded(nPost)
         # write it to the DB      
+        print(f"INSERT INTO `{variables.DB_DATABASE}`.`{variables.DB_REPO}` (title, date, tag) VALUES ('{newest[0]}','{newest[1]}','{newest[2]}')")
         cur.execute(f"INSERT INTO `{variables.DB_DATABASE}`.`{variables.DB_REPO}` (title, date, tag) VALUES ('{newest[0]}','{newest[1]}','{newest[2]}')")
 
 # Run the bot
