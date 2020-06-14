@@ -109,8 +109,8 @@ async def send_embeded(newPost):
 async def try_post(nPost,cur):
     global posts
     global postsIDS
-    newest = ( nPost.title.replace("'",""), datetime.now().strftime("%Y/%m/%d %H:%M:%S"), nPost.id[nPost.id.index("p"):] )
-    newestID =  nPost.id
+    newestID = nPost.id[nPost.id.index("p"):]
+    newest = ( nPost.title.replace("'",""), datetime.now().strftime("%Y/%m/%d %H:%M:%S"), newestID )
     if newestID in postsIDS:
         return
     else:
